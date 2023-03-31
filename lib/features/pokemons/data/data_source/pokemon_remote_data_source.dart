@@ -14,7 +14,6 @@ class PokemonRemoteDataSource {
   }
 
   Future<PokemonDetail> fetchPokemonDetail(String name) async {
-    await Future.delayed(const Duration(seconds: 5));
     final response = await dio.get("pokemon/$name");
     return PokemonDetail.fromJson(response.data as Map<String, dynamic>);
   }

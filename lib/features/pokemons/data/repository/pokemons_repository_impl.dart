@@ -11,18 +11,6 @@ class PokemonsRepositoryImpl extends BaseDataController<Pokemon> implements Poke
   final PokemonRemoteDataSource dataSource;
 
   @override
-  fetchPokemonDetail(String name) async {
-   try {
-     final pokemonDetail = await dataSource.fetchPokemonDetail(name);
-     var pokemon = readSingle((element) => element.name == name);
-     pokemon = pokemon.copyWith(details: pokemonDetail);
-     update(pokemon, (element) => element.name == name,);
-   } catch (e) {
-     print(e);
-   }
-  }
-
-  @override
   fetchPokemons() async {
     try {
       final pokemons = await dataSource.fetchPokemons();
@@ -34,12 +22,12 @@ class PokemonsRepositoryImpl extends BaseDataController<Pokemon> implements Poke
   }
 
   @override
-  Stream<Pokemon> observePokemon(String name) {
-   return observeSingle((element) => element.name == name);
+  Stream<List<Pokemon>> observePokemons() {
+    return observeAll();
   }
 
   @override
-  Stream<List<Pokemon>> observePokemons() {
-    return observeAll();
+  Stream<Pokemon> observePokemon(String name) {
+    return observeSingle((element) => element.name == name);
   }
 }

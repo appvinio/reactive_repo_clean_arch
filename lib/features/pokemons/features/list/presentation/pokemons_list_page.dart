@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_test/features/pokemons/domain/entity/pokemon.dart';
+import 'package:reactive_test/features/pokemons/domain/entity/pokemon_with_detail_container.dart';
 import 'package:reactive_test/features/pokemons/domain/repository/pokemons_repository.dart';
+import 'package:reactive_test/features/pokemons/domain/service/pokemons_service.dart';
 import 'package:reactive_test/features/pokemons/features/detail/presentation/pokemons_detail_page.dart';
 import 'package:reactive_test/injection_container.dart';
 
@@ -13,8 +15,8 @@ class PokemonsListPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Reactive"),
       ),
-      body: StreamBuilder<List<Pokemon>>(
-        stream: sl<PokemonsRepository>().observePokemons(),
+      body: StreamBuilder<List<PokemonWithDetailContainer>>(
+        stream: sl<PokemonService>().observePokemons(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -27,11 +29,14 @@ class PokemonsListPage extends StatelessWidget {
                 return ListView.builder(
                   itemBuilder: (context, index) {
                     final pokemon = data[index];
+                    final detail = pokemon.details;
+                    final download = pokemon.download;
                     return ListTile(
-                      title: Text(pokemon.name),
-                      subtitle: Text("Has details: ${pokemon.details != null}"),
+                      title: Text(pokemon.main.name),
+                      subtitle: Text("Has details: ${detail != null}"),
+                      trailing: Text(download != null ? "${download.progress*100}%" : ""),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => PokemonsDetailPage(pokemonName: pokemon.name),
+                        builder: (context) => PokemonsDetailPage(pokemonName: pokemon.main.name),
                       )),
                     );
                   },
@@ -44,7 +49,7 @@ class PokemonsListPage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => sl<PokemonsRepository>().fetchPokemons(),
+        onPressed: () => sl<PokemonService>().fetchPokemons(),
       ),
     );
   }

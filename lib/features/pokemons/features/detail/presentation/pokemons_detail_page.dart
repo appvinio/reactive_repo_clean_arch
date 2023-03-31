@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_test/features/pokemons/domain/entity/pokemon.dart';
+import 'package:reactive_test/features/pokemons/domain/entity/pokemon_with_detail_container.dart';
 import 'package:reactive_test/features/pokemons/domain/repository/pokemons_repository.dart';
+import 'package:reactive_test/features/pokemons/domain/service/pokemons_service.dart';
 import 'package:reactive_test/injection_container.dart';
 
 class PokemonsDetailPage extends StatelessWidget {
@@ -17,8 +19,8 @@ class PokemonsDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("Reactive $pokemonName"),
       ),
-      body: StreamBuilder<Pokemon>(
-        stream: sl<PokemonsRepository>().observePokemon(pokemonName),
+      body: StreamBuilder<PokemonWithDetailContainer>(
+        stream: sl<PokemonService>().observePokemon(pokemonName),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -30,21 +32,32 @@ class PokemonsDetailPage extends StatelessWidget {
                 final data = snapshot.data;
                 if (data != null) {
                   final details = data.details;
-                  if (details != null) {
-                    return Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("Weight: ${details.weight}"),
-                          Text("Height: ${details.height}"),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return const Center(
-                      child: Text("Waiting for details"),
-                    );
-                  }
+                  final download = data.download;
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (details != null)
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Weight: ${details.weight}"),
+                              Text("Height: ${details.height}"),
+                            ],
+                          ),
+                        if (download != null)
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Progress ${download.progress * 100}%"),
+                              LinearProgressIndicator(
+                                value: download.progress,
+                              ),
+                            ],
+                          )
+                      ],
+                    ),
+                  );
                 }
               }
               return const SizedBox.shrink();
@@ -52,7 +65,7 @@ class PokemonsDetailPage extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => sl<PokemonsRepository>().fetchPokemonDetail(pokemonName),
+        onPressed: () => sl<PokemonService>().fetchPokemonDetail(pokemonName),
       ),
     );
   }

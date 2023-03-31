@@ -7,7 +7,7 @@ typedef SingleElementReadPrediction<Type> = bool Function(
 abstract class BaseDataController<Type> {
   final List<Type> data = [];
 
-  final BehaviorSubject<List<Type>> valuesSubject = BehaviorSubject();
+  final BehaviorSubject<List<Type>> valuesSubject = BehaviorSubject.seeded([]);
 
   List<Type> readAll() => List.of(data);
 
@@ -18,6 +18,10 @@ abstract class BaseDataController<Type> {
   Stream<Type> observeSingle(SingleElementReadPrediction<Type> prediction) =>
       valuesSubject.stream.map((event) => event.firstWhere(prediction));
 
+  Future<List<Type>> getAll() async => List.of(data);
+
+  Future<Type> getSingle(SingleElementReadPrediction<Type> prediction) async => data.firstWhere(prediction);
+
   void clear() async {
     data.clear();
     _refreshData();
@@ -25,6 +29,18 @@ abstract class BaseDataController<Type> {
 
   void dispose() async {
     await valuesSubject.close();
+  }
+
+  bool contains(SingleElementReadPrediction<Type> prediction) {
+    return data.indexWhere(prediction) != -1;
+  }
+
+  void addOrUpdate(Type element, SingleElementReadPrediction<Type> prediction) {
+    if (contains(prediction)) {
+      update(element, prediction);
+    } else {
+      add(element);
+    }
   }
 
   void add(Type element) {
